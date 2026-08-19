@@ -48,7 +48,7 @@ const SaleModel = {
     );
 
     const dataRes = await query(
-      `SELECT s.id, s.total_amount, s.paid_amount, s.baki_amount, s.payment_status,
+      `SELECT s.id, s.shop_id, s.customer_id, s.total_amount, s.paid_amount, s.baki_amount, s.payment_status,
               s.notes, s.sale_date, s.created_at,
               c.name AS customer_name, c.phone AS customer_phone,
               (SELECT COUNT(*) FROM sale_items si WHERE si.sale_id = s.id) AS items_count

@@ -22,7 +22,7 @@ const SupplierModel = {
       [shopId, s]
     );
     const dataRes = await query(
-      `SELECT id, name, company_name, phone, address, email,
+      `SELECT id, shop_id, name, company_name, phone, address, email,
               total_purchased, total_paid, udharo, is_active, created_at,
               (SELECT MAX(purchase_date) FROM purchases p WHERE p.supplier_id = suppliers.id) AS last_purchase_date
        FROM suppliers

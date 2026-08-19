@@ -82,9 +82,14 @@ export const offlineDB = {
 
     async saveFromServer(customers) {
       const db = await getDB();
+      console.log(`💾 saveFromServer: saving ${customers.length} customers to IndexedDB`);
+      if (customers.length === 0) return;
       const tx = db.transaction('customers', 'readwrite');
-      for (const c of customers) await tx.store.put({ ...c, _isOffline: false });
+      for (const c of customers) {
+        await tx.store.put({ ...c, _isOffline: false });
+      }
       await tx.done;
+      console.log(`💾 saveFromServer: done saving customers`);
     },
   },
 

@@ -40,7 +40,7 @@ const CustomerModel = {
     );
 
     const dataRes = await query(
-      `SELECT id, name, phone, address, total_purchased, total_paid, baki, created_at, updated_at,
+      `SELECT id, shop_id, name, phone, address, total_purchased, total_paid, baki, created_at, updated_at,
               (SELECT MAX(sale_date) FROM sales WHERE customer_id = customers.id) AS last_purchase_date
        FROM customers
        WHERE shop_id = $1 AND (name ILIKE $2 OR phone ILIKE $2)

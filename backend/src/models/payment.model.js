@@ -27,7 +27,7 @@ const PaymentModel = {
     );
 
     const dataRes = await query(
-      `SELECT p.id, p.amount, p.payment_method, p.note, p.payment_date, p.created_at,
+      `SELECT p.id, p.shop_id, p.customer_id, p.amount, p.payment_method, p.note, p.payment_date, p.created_at,
               c.name AS customer_name, c.phone AS customer_phone,
               u.name AS received_by_name
        FROM payments p

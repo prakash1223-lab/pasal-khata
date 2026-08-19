@@ -196,7 +196,7 @@ async function processQueueItem(item) {
 
 /** Pull all data from server into local IndexedDB */
 export async function fullSyncFromServer(shopId) {
-  console.log('📥 Full sync from server...');
+  console.log('📥 Full sync from server starting...');
   try {
     const [customersRes, productsRes, salesRes, paymentsRes, suppliersRes] =
       await Promise.all([
@@ -207,16 +207,27 @@ export async function fullSyncFromServer(shopId) {
         api.get('/suppliers', { params: { limit: 1000 } }),
       ]);
 
-    await offlineDB.customers.saveFromServer(customersRes.data ?? []);
-    await offlineDB.products.saveFromServer(productsRes.data   ?? []);
-    await offlineDB.sales.saveFromServer(salesRes.data         ?? []);
-    await offlineDB.payments.saveFromServer(paymentsRes.data   ?? []);
-    await offlineDB.suppliers.saveFromServer(suppliersRes.data ?? []);
+    const customers = customersRes.data ?? customersRes ?? [];
+    const products  = productsRes.data  ?? productsRes  ?? [];
+    const sales     = salesRes.data     ?? salesRes     ?? [];
+    const payments  = paymentsRes.data  ?? paymentsRes  ?? [];
+    const suppliers = suppliersRes.data ?? suppliersRes ?? [];
 
-    console.log('✅ Full sync from server complete');
+    console.log(`📥 Received — customers:${customers.length} products:${products.length} sales:${sales.length} payments:${payments.length} suppliers:${suppliers.length}`);
+
+    await offlineDB.customers.saveFromServer(Array.isArray(customers) ? customers : []);
+    await offlineDB.products.saveFromServer(Array.isArray(products)   ? products  : []);
+    await offlineDB.sales.saveFromServer(Array.isArray(sales)         ? sales     : []);
+    await offlineDB.payments.saveFromServer(Array.isArray(payments)   ? payments  : []);
+    await offlineDB.suppliers.saveFromServer(Array.isArray(suppliers) ? suppliers : []);
+
+    // Verify what's in IndexedDB after save
+    const db = await getDB();
+    const savedCustomers = await db.getAll('customers');
+    console.log(`✅ Full sync done — ${savedCustomers.length} customers in IndexedDB`);
     return true;
   } catch (err) {
-    console.error('❌ Full sync failed:', err.message);
+    console.error('❌ Full sync failed:', err.message, err);
     return false;
   }
 }
