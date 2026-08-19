@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api                    from '../services/api';
 import { initLocalDB }        from '../db/localDB';
+import { clearAllLocalData }  from '../db/localDB';
 import { fullSyncFromServer } from '../db/syncEngine';
 
 const AuthContext = createContext(null);
@@ -142,6 +143,8 @@ export function AuthProvider({ children }) {
   // ── logout ──────────────────────────────────────────────────────────────────
   const logout = useCallback(() => {
     clearSession();
+    // Clear local DB so next user gets a fresh sync
+    clearAllLocalData().catch(console.error);
     setUser(null);
     setIsAuthenticated(false);
   }, []);

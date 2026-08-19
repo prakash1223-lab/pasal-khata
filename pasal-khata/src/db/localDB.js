@@ -1,7 +1,7 @@
-import { openDB } from 'idb';
+import { openDB, deleteDB } from 'idb';
 
 const DB_NAME    = 'pasal_khata_local';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // bump to force wipe of v1 stale data
 
 let db = null;
 
@@ -9,76 +9,76 @@ export async function initLocalDB() {
   if (db) return db;
 
   db = await openDB(DB_NAME, DB_VERSION, {
-    upgrade(database) {
-      // customers
-      if (!database.objectStoreNames.contains('customers')) {
-        const s = database.createObjectStore('customers', { keyPath: 'id' });
-        s.createIndex('shop_id', 'shop_id');
-        s.createIndex('name',    'name');
-        s.createIndex('phone',   'phone');
+    upgrade(database, oldVersion) {
+      // v1 → v2: wipe all stores and recreate clean
+      // This clears any stale/wrong data from before the offline system was built
+      if (oldVersion < 2) {
+        const existing = Array.from(database.objectStoreNames);
+        for (const name of existing) {
+          database.deleteObjectStore(name);
+        }
+        console.log('🔄 IndexedDB upgraded v1→v2: all stores cleared for fresh sync');
       }
+
+      // customers
+      const customers = database.createObjectStore('customers', { keyPath: 'id' });
+      customers.createIndex('shop_id', 'shop_id');
+      customers.createIndex('name',    'name');
+      customers.createIndex('phone',   'phone');
 
       // products
-      if (!database.objectStoreNames.contains('products')) {
-        const s = database.createObjectStore('products', { keyPath: 'id' });
-        s.createIndex('shop_id', 'shop_id');
-        s.createIndex('name',    'name');
-      }
+      const products = database.createObjectStore('products', { keyPath: 'id' });
+      products.createIndex('shop_id', 'shop_id');
+      products.createIndex('name',    'name');
 
       // sales
-      if (!database.objectStoreNames.contains('sales')) {
-        const s = database.createObjectStore('sales', { keyPath: 'id' });
-        s.createIndex('shop_id',     'shop_id');
-        s.createIndex('customer_id', 'customer_id');
-        s.createIndex('sale_date',   'sale_date');
-      }
+      const sales = database.createObjectStore('sales', { keyPath: 'id' });
+      sales.createIndex('shop_id',     'shop_id');
+      sales.createIndex('customer_id', 'customer_id');
+      sales.createIndex('sale_date',   'sale_date');
 
       // sale_items
-      if (!database.objectStoreNames.contains('sale_items')) {
-        const s = database.createObjectStore('sale_items', { keyPath: 'id' });
-        s.createIndex('sale_id', 'sale_id');
-      }
+      const saleItems = database.createObjectStore('sale_items', { keyPath: 'id' });
+      saleItems.createIndex('sale_id', 'sale_id');
 
       // payments
-      if (!database.objectStoreNames.contains('payments')) {
-        const s = database.createObjectStore('payments', { keyPath: 'id' });
-        s.createIndex('shop_id',     'shop_id');
-        s.createIndex('customer_id', 'customer_id');
-      }
+      const payments = database.createObjectStore('payments', { keyPath: 'id' });
+      payments.createIndex('shop_id',     'shop_id');
+      payments.createIndex('customer_id', 'customer_id');
 
       // suppliers
-      if (!database.objectStoreNames.contains('suppliers')) {
-        const s = database.createObjectStore('suppliers', { keyPath: 'id' });
-        s.createIndex('shop_id', 'shop_id');
-      }
+      const suppliers = database.createObjectStore('suppliers', { keyPath: 'id' });
+      suppliers.createIndex('shop_id', 'shop_id');
 
       // purchases
-      if (!database.objectStoreNames.contains('purchases')) {
-        const s = database.createObjectStore('purchases', { keyPath: 'id' });
-        s.createIndex('shop_id',     'shop_id');
-        s.createIndex('supplier_id', 'supplier_id');
-      }
+      const purchases = database.createObjectStore('purchases', { keyPath: 'id' });
+      purchases.createIndex('shop_id',     'shop_id');
+      purchases.createIndex('supplier_id', 'supplier_id');
 
       // purchase_items
-      if (!database.objectStoreNames.contains('purchase_items')) {
-        const s = database.createObjectStore('purchase_items', { keyPath: 'id' });
-        s.createIndex('purchase_id', 'purchase_id');
-      }
+      const purchaseItems = database.createObjectStore('purchase_items', { keyPath: 'id' });
+      purchaseItems.createIndex('purchase_id', 'purchase_id');
 
-      // sync_queue — persists across app closes
-      if (!database.objectStoreNames.contains('sync_queue')) {
-        const s = database.createObjectStore('sync_queue', {
-          keyPath:       'id',
-          autoIncrement: true,
-        });
-        s.createIndex('status',     'status');
-        s.createIndex('created_at', 'created_at');
-      }
+      // sync_queue — persists offline actions across app closes
+      const syncQueue = database.createObjectStore('sync_queue', {
+        keyPath:       'id',
+        autoIncrement: true,
+      });
+      syncQueue.createIndex('status',     'status');
+      syncQueue.createIndex('created_at', 'created_at');
 
-      // meta — last_synced timestamps etc.
-      if (!database.objectStoreNames.contains('meta')) {
-        database.createObjectStore('meta', { keyPath: 'key' });
-      }
+      // meta — last_synced timestamps, version flags etc.
+      database.createObjectStore('meta', { keyPath: 'key' });
+    },
+
+    blocked() {
+      console.warn('IndexedDB upgrade blocked — close other tabs and reload');
+    },
+
+    blocking() {
+      // Another tab is trying to upgrade — close our connection
+      db?.close();
+      db = null;
     },
   });
 
@@ -90,6 +90,7 @@ export async function getDB() {
   return db;
 }
 
+/** Wipe all data stores but keep the DB structure intact */
 export async function clearAllLocalData() {
   const database = await getDB();
   const stores = [
@@ -103,4 +104,12 @@ export async function clearAllLocalData() {
   }
   await tx.done;
   console.log('🗑️ All local data cleared');
+}
+
+/** Nuclear option — delete the entire DB (used for logout / account switch) */
+export async function deleteLocalDB() {
+  db?.close();
+  db = null;
+  await deleteDB(DB_NAME);
+  console.log('💣 Local DB deleted');
 }
