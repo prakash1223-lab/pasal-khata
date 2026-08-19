@@ -11,7 +11,7 @@ export function useProducts() {
   const [search,   setSearch]   = useState('');
 
   const { user }               = useAuth();
-  const { updatePendingCount, syncVersion } = useNetwork();
+  const { updatePendingCount, syncVersion, isOnline } = useNetwork();
   const debounceRef            = useRef(null);
 
   const fetchProducts = useCallback(async (q = '') => {
@@ -19,11 +19,23 @@ export function useProducts() {
     setLoading(true);
     setError(null);
     try {
-      const data = await offlineDB.products.getAll(user.shopId, { search: q });
-      setProducts(data);
+      if (navigator.onLine) {
+        const res = await productService.getAll({ search: q, limit: 500 });
+        const data = res.data ?? [];
+        setProducts(data);
+        offlineDB.products.saveFromServer(data).catch(() => {});
+      } else {
+        const data = await offlineDB.products.getAll(user.shopId, { search: q });
+        setProducts(data);
+      }
     } catch (err) {
       console.error('useProducts fetch error:', err.message);
-      setError(err.message || 'Failed to load products');
+      try {
+        const data = await offlineDB.products.getAll(user.shopId, { search: q });
+        setProducts(data);
+      } catch {
+        setError(err.message || 'Failed to load products');
+      }
     } finally {
       setLoading(false);
     }
@@ -33,28 +45,43 @@ export function useProducts() {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => fetchProducts(search), 300);
     return () => clearTimeout(debounceRef.current);
-  }, [search, fetchProducts, syncVersion]);
+  }, [search, fetchProducts, syncVersion, isOnline]);
 
   const createProduct = useCallback(async (data) => {
-    const product = await offlineDB.products.create(data, user.shopId);
-    setProducts(prev => [product, ...prev]);
-    await updatePendingCount();
-    return product;
+    if (navigator.onLine) {
+      const res = await productService.create(data);
+      const product = res.data ?? res;
+      await offlineDB.products.saveFromServer([product]).catch(() => {});
+      setProducts(prev => [product, ...prev]);
+      return product;
+    } else {
+      const product = await offlineDB.products.create(data, user.shopId);
+      setProducts(prev => [product, ...prev]);
+      await updatePendingCount();
+      return product;
+    }
   }, [user?.shopId, updatePendingCount]);
 
   const updateProduct = useCallback(async (id, data) => {
-    const product = await offlineDB.products.update(id, data);
-    setProducts(prev => prev.map(p => p.id === id ? product : p));
-    await updatePendingCount();
-    return product;
+    if (navigator.onLine) {
+      const res = await productService.update(id, data);
+      const product = res.data ?? res;
+      await offlineDB.products.saveFromServer([product]).catch(() => {});
+      setProducts(prev => prev.map(p => p.id === id ? product : p));
+      return product;
+    } else {
+      const product = await offlineDB.products.update(id, data);
+      setProducts(prev => prev.map(p => p.id === id ? product : p));
+      await updatePendingCount();
+      return product;
+    }
   }, [updatePendingCount]);
 
   const deleteProduct = useCallback(async (id) => {
-    await offlineDB.products.delete(id);
+    await productService.delete(id);
     setProducts(prev => prev.filter(p => p.id !== id));
-    if (navigator.onLine) {
-      productService.delete(id).catch(console.error);
-    }
+    // Soft delete in IndexedDB too
+    offlineDB.products.delete(id).catch(() => {});
   }, []);
 
   return {

@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import dayjs             from 'dayjs';
-import { offlineDB }     from '../db/offlineDataLayer';
-import { useAuth }       from '../context/AuthContext';
-import { useNetwork }    from '../context/NetworkContext';
+import dayjs                  from 'dayjs';
+import { offlineDB }          from '../db/offlineDataLayer';
+import { paymentService }     from '../services/paymentService';
+import { syncToServer }       from '../db/syncEngine';
+import { useAuth }            from '../context/AuthContext';
+import { useNetwork }         from '../context/NetworkContext';
 
 function getDateRange(filter) {
   const now = dayjs();
@@ -18,29 +20,44 @@ export function usePayments(filter = 'week') {
   const [error,    setError]    = useState(null);
 
   const { user }               = useAuth();
-  const { updatePendingCount, syncVersion } = useNetwork();
+  const { updatePendingCount, syncVersion, isOnline } = useNetwork();
 
   const fetchPayments = useCallback(async () => {
     if (!user?.shopId) return;
     setLoading(true);
     setError(null);
     try {
-      const data = await offlineDB.payments.getAll(user.shopId, getDateRange(filter));
-      setPayments(data);
+      if (navigator.onLine) {
+        const res  = await paymentService.getAll({ ...getDateRange(filter), limit: 200 });
+        const data = res.data ?? [];
+        setPayments(data);
+        offlineDB.payments.saveFromServer(data).catch(() => {});
+      } else {
+        const data = await offlineDB.payments.getAll(user.shopId, getDateRange(filter));
+        setPayments(data);
+      }
     } catch (err) {
       console.error('usePayments fetch error:', err.message);
-      setError(err.message || 'Failed to load payments');
+      try {
+        const data = await offlineDB.payments.getAll(user.shopId, getDateRange(filter));
+        setPayments(data);
+      } catch {
+        setError(err.message || 'Failed to load payments');
+      }
     } finally {
       setLoading(false);
     }
   }, [user?.shopId, filter]);
 
-  useEffect(() => { fetchPayments(); }, [fetchPayments, syncVersion]);
+  useEffect(() => { fetchPayments(); }, [fetchPayments, syncVersion, isOnline]);
 
   const createPayment = useCallback(async (data) => {
     const result = await offlineDB.payments.create(data, user.shopId, user.id);
     setPayments(prev => [result.payment, ...prev]);
     await updatePendingCount();
+    if (navigator.onLine) {
+      syncToServer().catch(() => {});
+    }
     return result;
   }, [user?.shopId, user?.id, updatePendingCount]);
 
