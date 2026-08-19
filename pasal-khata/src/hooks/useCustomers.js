@@ -12,7 +12,7 @@ export function useCustomers(initialParams = {}) {
   const [pagination, setPagination] = useState({ page: 1, total: 0, totalPages: 1 });
 
   const { user }               = useAuth();
-  const { updatePendingCount } = useNetwork();
+  const { updatePendingCount, syncVersion } = useNetwork();
   const debounceRef            = useRef(null);
 
   const fetchCustomers = useCallback(async (params = {}) => {
@@ -41,10 +41,10 @@ export function useCustomers(initialParams = {}) {
     return () => clearTimeout(debounceRef.current);
   }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Initial load
+  // Initial load + re-fetch when syncVersion bumps (after fullSyncFromServer)
   useEffect(() => {
     if (user?.shopId) fetchCustomers();
-  }, [user?.shopId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user?.shopId, syncVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const createCustomer = useCallback(async (data) => {
     const customer = await offlineDB.customers.create(data, user.shopId);

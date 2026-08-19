@@ -61,8 +61,8 @@ export function AuthProvider({ children }) {
           setUser(freshUser);
           saveSession(session.token, freshUser);
           setIsAuthenticated(true);
-          // Sync in background — don't await (don't block UI)
-          fullSyncFromServer(freshUser.shopId).catch(console.error);
+          // Await full sync so IndexedDB is populated BEFORE hooks render
+          await fullSyncFromServer(freshUser.shopId);
         } catch {
           // Token expired or invalid
           clearSession();
@@ -109,9 +109,9 @@ export function AuthProvider({ children }) {
       saveSession(data.token, userData);
       setUser(userData);
       setIsAuthenticated(true);
-      // Pull all data into local DB right after login
+      // Await full sync so IndexedDB is populated before the dashboard renders
       await initLocalDB();
-      fullSyncFromServer(userData.shopId).catch(console.error);
+      await fullSyncFromServer(userData.shopId);
       return { success: true };
     } catch (err) {
       return { success: false, message: err.message };

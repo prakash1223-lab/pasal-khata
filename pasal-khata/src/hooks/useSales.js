@@ -18,7 +18,7 @@ export function useSales(filter = 'week') {
   const [error,   setError]   = useState(null);
 
   const { user }               = useAuth();
-  const { updatePendingCount } = useNetwork();
+  const { updatePendingCount, syncVersion } = useNetwork();
 
   const fetchSales = useCallback(async () => {
     if (!user?.shopId) return;
@@ -35,7 +35,7 @@ export function useSales(filter = 'week') {
     }
   }, [user?.shopId, filter]);
 
-  useEffect(() => { fetchSales(); }, [fetchSales]);
+  useEffect(() => { fetchSales(); }, [fetchSales, syncVersion]);
 
   const createSale = useCallback(async (data) => {
     const sale = await offlineDB.sales.create(data, user.shopId, user.id);

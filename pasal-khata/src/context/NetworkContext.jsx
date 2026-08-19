@@ -11,6 +11,8 @@ export function NetworkProvider({ children }) {
   const [lastSynced,    setLastSynced]    = useState(
     () => localStorage.getItem('last_synced') || null
   );
+  // Increments every time a full server sync completes — hooks watch this to re-fetch
+  const [syncVersion,   setSyncVersion]   = useState(0);
 
   const updatePendingCount = useCallback(async () => {
     const count = await getPendingCount();
@@ -34,6 +36,15 @@ export function NetworkProvider({ children }) {
       setIsSyncing(false);
     }
   }, [isSyncing, updatePendingCount]);
+
+  const triggerFullSync = useCallback(async (shopId) => {
+    const ok = await fullSyncFromServer(shopId);
+    if (ok) {
+      setSyncVersion(v => v + 1); // signal all hooks to re-fetch from IndexedDB
+      await updatePendingCount();
+    }
+    return ok;
+  }, [updatePendingCount]);
 
   // Load pending count on mount
   useEffect(() => {
@@ -72,9 +83,10 @@ export function NetworkProvider({ children }) {
       pendingCount,
       isSyncing,
       lastSynced,
+      syncVersion,
       performSync,
       updatePendingCount,
-      fullSyncFromServer,
+      fullSyncFromServer: triggerFullSync,
     }}>
       {children}
     </NetworkContext.Provider>

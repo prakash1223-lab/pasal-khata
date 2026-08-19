@@ -11,7 +11,7 @@ export function useProducts() {
   const [search,   setSearch]   = useState('');
 
   const { user }               = useAuth();
-  const { updatePendingCount } = useNetwork();
+  const { updatePendingCount, syncVersion } = useNetwork();
   const debounceRef            = useRef(null);
 
   const fetchProducts = useCallback(async (q = '') => {
@@ -33,7 +33,7 @@ export function useProducts() {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => fetchProducts(search), 300);
     return () => clearTimeout(debounceRef.current);
-  }, [search, fetchProducts]);
+  }, [search, fetchProducts, syncVersion]);
 
   const createProduct = useCallback(async (data) => {
     const product = await offlineDB.products.create(data, user.shopId);

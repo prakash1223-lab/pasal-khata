@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { offlineDB }  from '../db/offlineDataLayer';
 import { useAuth }    from '../context/AuthContext';
+import { useNetwork } from '../context/NetworkContext';
 
 export function useDashboard() {
   const [data,    setData]    = useState(null);
@@ -8,6 +9,7 @@ export function useDashboard() {
   const [error,   setError]   = useState(null);
 
   const { user } = useAuth();
+  const { syncVersion } = useNetwork();
 
   const fetchDashboard = useCallback(async () => {
     if (!user?.shopId) return;
@@ -24,7 +26,7 @@ export function useDashboard() {
     }
   }, [user?.shopId]);
 
-  useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
+  useEffect(() => { fetchDashboard(); }, [fetchDashboard, syncVersion]);
 
   return { data, loading, error, refetch: fetchDashboard };
 }

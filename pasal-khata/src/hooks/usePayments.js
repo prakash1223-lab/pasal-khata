@@ -18,7 +18,7 @@ export function usePayments(filter = 'week') {
   const [error,    setError]    = useState(null);
 
   const { user }               = useAuth();
-  const { updatePendingCount } = useNetwork();
+  const { updatePendingCount, syncVersion } = useNetwork();
 
   const fetchPayments = useCallback(async () => {
     if (!user?.shopId) return;
@@ -35,7 +35,7 @@ export function usePayments(filter = 'week') {
     }
   }, [user?.shopId, filter]);
 
-  useEffect(() => { fetchPayments(); }, [fetchPayments]);
+  useEffect(() => { fetchPayments(); }, [fetchPayments, syncVersion]);
 
   const createPayment = useCallback(async (data) => {
     const result = await offlineDB.payments.create(data, user.shopId, user.id);
