@@ -56,7 +56,19 @@ export function NetworkProvider({ children }) {
     const handleOnline = async () => {
       console.log('🌐 Internet connected — syncing...');
       setIsOnline(true);
+      // First push any pending offline actions
       await performSync();
+      // Then pull fresh data from server into IndexedDB cache
+      const session = localStorage.getItem('pasal_khata_user');
+      if (session) {
+        try {
+          const userData = JSON.parse(session);
+          if (userData.shopId) {
+            const ok = await fullSyncFromServer(userData.shopId);
+            if (ok) setSyncVersion(v => v + 1);
+          }
+        } catch { /* ignore */ }
+      }
     };
     const handleOffline = () => {
       console.log('📴 Offline mode active');
