@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+* {
+  font-family: 'Inter', sans-serif;
+}
+
+button, a, [role="button"], select, label[for] {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+body {
+  background-color: #f9fafb;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Mobile: narrow centered column ── */
+@media (max-width: 767px) {
+  #root {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background-color: #f9fafb;
+    position: relative;
+  }
+
+  /* Fullscreen pages (Login, MyKhata) break out of the 430px constraint */
+  #root:has(.fullscreen-page) {
+    max-width: 100%;
+  }
+}
+
+/* ── Desktop: full viewport ── */
+@media (min-width: 768px) {
+  #root {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #F0F2F5;
+  }
+
+  body {
+    background-color: #F0F2F5;
+    font-size: 14px;
+  }
+}
+
+/* ─── Responsive table ─────────────────────────────── */
+.resp-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.resp-table th {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid #f3f4f6;
+  background: #f9fafb;
+  white-space: nowrap;
+}
+
+.resp-table td {
+  font-size: 13px;
+  padding: 12px 14px;
+  border-bottom: 1px solid #f3f4f6;
+  color: #111827;
+}
+
+.resp-table tr:last-child td {
+  border-bottom: none;
+}
+
+.resp-table tbody tr:hover td {
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+/* ─── Desktop page wrapper ─────────────────────────── */
+@media (min-width: 768px) {
+  .desktop-page {
+    padding: 24px 28px;
+    min-height: 100vh;
+  }
+
+  .desktop-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    gap: 12px;
+  }
+
+  .desktop-card {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+  }
+}

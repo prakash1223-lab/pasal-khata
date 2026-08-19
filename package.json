@@ -1,0 +1,16 @@
+{
+  "name": "pasal-khata",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pasal Khata — Digital Khata System for Nepal (monorepo root)",
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd pasal-khata && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "cd pasal-khata && npm run build",
+    "install:all": "cd backend && npm install && cd ../pasal-khata && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

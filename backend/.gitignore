@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.production
+.env.local
+dist/
+*.log
+
+# Backup files — contain sensitive financial data, never commit
+backups/
