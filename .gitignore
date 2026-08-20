@@ -1,37 +1,45 @@
 # Dependencies
 node_modules/
+*/node_modules/
 
 # Environment files — NEVER commit these
 .env
-.env.production
 .env.local
+.env.production
 .env.*.local
+backend/.env
+backend/.env.production
+pasal-khata/.env
+pasal-khata/.env.production
 
 # Build output
 dist/
+build/
 
 # Backup files — contain sensitive financial data
 backups/
+*.backup
+*.bak
 
 # Logs
 *.log
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 
 # OS files
 .DS_Store
 Thumbs.db
 desktop.ini
 
+# Editor
+.vscode/settings.json
+.idea/
+*.swp
+
 # Test coverage
 coverage/
 .nyc_output/
 
-# SQLite (not used but just in case)
+# SQLite
 *.sqlite
 *.sqlite3
-
-# Editor
-.vscode/settings.json
-.idea/

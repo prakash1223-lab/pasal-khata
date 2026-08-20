@@ -8,17 +8,19 @@
     "npm": ">=8.0.0"
   },
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "migrate": "node src/migrations/run.js",
-    "seed": "node src/seeds/seed.js",
-    "cleanup": "node src/scripts/cleanup-seed-data.js",
-    "cleanup:yes": "node src/scripts/cleanup-seed-data.js --yes",
-    "verify": "node src/scripts/verify-data.js",
-    "backup": "node src/scripts/backup.js",
-    "backup:list": "node src/scripts/backup.js list",
-    "restore": "node src/scripts/restore.js",
-    "setup-db": "node src/scripts/setup-database.js"
+    "start":            "node src/server.js",
+    "dev":              "nodemon src/server.js",
+    "migrate":          "node src/migrations/run.js",
+    "migrate:supabase": "node src/migrations/run-supabase.js",
+    "seed":             "node src/seeds/seed.js",
+    "cleanup":          "node src/scripts/cleanup-seed-data.js",
+    "cleanup:yes":      "node src/scripts/cleanup-seed-data.js --yes",
+    "verify":           "node src/scripts/verify-data.js",
+    "backup":           "node src/scripts/backup.js",
+    "backup:list":      "node src/scripts/backup.js list",
+    "restore":          "node src/scripts/restore.js",
+    "setup-db":         "node src/scripts/setup-database.js",
+    "pre-deploy":       "node src/scripts/pre-deploy-check.js"
   },
   "keywords": [
     "pasal-khata",
@@ -30,6 +32,7 @@
   "license": "MIT",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "compression": "^1.8.1",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "exceljs": "^4.4.0",

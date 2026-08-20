@@ -1,9 +1,10 @@
 'use strict';
 
-const express    = require('express');
-const cors       = require('cors');
-const helmet     = require('helmet');
-const rateLimit  = require('express-rate-limit');
+const express      = require('express');
+const cors         = require('cors');
+const helmet       = require('helmet');
+const rateLimit    = require('express-rate-limit');
+const compression  = require('compression');
 const { FRONTEND_URL, NODE_ENV } = require('./config/env');
 
 // Routes
@@ -27,6 +28,9 @@ const app = express();
 // ── Trust proxy (required for Railway / Heroku) ───────────────────────────────
 app.set('trust proxy', 1);
 
+// ── Compression ───────────────────────────────────────────────────────────────
+app.use(compression());
+
 // ── Security headers ──────────────────────────────────────────────────────────
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
@@ -38,6 +42,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:3000',
+  'http://localhost:4173',   // Vite preview
 ].filter(Boolean);
 
 app.use(cors({

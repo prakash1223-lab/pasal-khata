@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: pasal-khata-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install && node src/migrations/run-supabase.js
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        sync: false
+      - key: BACKUP_DIR
+        value: /tmp/backups
+      - key: MAX_BACKUPS
+        value: 30
+      - key: RENDER_EXTERNAL_URL
+        sync: false
+    healthCheckPath: /health
+    autoDeploy: true

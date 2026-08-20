@@ -1,65 +1,65 @@
 'use strict';
 
 const { Pool } = require('pg');
-const { DATABASE_URL, NODE_ENV } = require('./env');
+require('dotenv').config();
+
+if (!process.env.DATABASE_URL) {
+  console.error('❌ DATABASE_URL environment variable is required');
+  process.exit(1);
+}
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  max: 20,
+  connectionString: process.env.DATABASE_URL,
+  ssl: isProduction ? { rejectUnauthorized: false } : false,
+  max: 10,
+  min: 2,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
+  connectionTimeoutMillis: 10000,
   keepAlive: true,
   keepAliveInitialDelayMillis: 10000,
 });
 
-pool.on('error', (err) => {
-  console.error('Unexpected database pool error:', err);
-});
-
 pool.on('connect', () => {
-  // silent — too noisy to log every connection
+  // silent on every connection — too noisy
 });
 
-// Test connection on startup
-pool.connect((err, client, release) => {
-  if (err) {
-    console.error('❌ Database connection error:', err.message);
-    return;
+pool.on('error', (err) => {
+  console.error('❌ Database pool error:', err.message);
+});
+
+async function testConnection() {
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT NOW() as time');
+    console.log('✅ Database connected at:', result.rows[0].time);
+    return true;
+  } catch (err) {
+    console.error('❌ Connection test failed:', err.message);
+    throw err;
+  } finally {
+    client.release();
   }
-  client.query('SELECT NOW()', (queryErr) => {
-    release();
-    if (queryErr) {
-      console.error('❌ Database query error:', queryErr.message);
-    } else {
-      console.log('✅ Database connected');
-    }
-  });
-});
+}
 
-/**
- * Run a parameterized query using the pool
- */
 async function query(text, params) {
   const start = Date.now();
   try {
-    const res = await pool.query(text, params);
+    const result = await pool.query(text, params);
     const duration = Date.now() - start;
-    if (duration > 1000) {
-      console.warn('⚠️  Slow query detected:', { text: text.substring(0, 80), duration });
+    if (duration > 2000) {
+      console.warn('⚠️ Slow query:', { duration: duration + 'ms', text: text.substring(0, 80) });
     }
-    return res;
+    return result;
   } catch (err) {
-    console.error('Database query error:', { text: text.substring(0, 80), err: err.message });
+    console.error('❌ Query error:', { message: err.message, query: text.substring(0, 80) });
     throw err;
   }
 }
 
-/**
- * Get a client from the pool for transactions
- */
 async function getClient() {
-  const client = await pool.connect();
+  const client          = await pool.connect();
   const originalQuery   = client.query.bind(client);
   const originalRelease = client.release.bind(client);
 
@@ -69,7 +69,7 @@ async function getClient() {
   };
 
   const timeout = setTimeout(() => {
-    console.error('⚠️  Client has been out for more than 30 seconds!', client.lastQuery);
+    console.error('⚠️ Client held for more than 30s!', client.lastQuery);
     client.release = originalRelease;
     client.release();
   }, 30000);
@@ -84,4 +84,4 @@ async function getClient() {
   return client;
 }
 
-module.exports = { query, getClient, pool };
+module.exports = { query, getClient, pool, testConnection };

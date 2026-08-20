@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-  timeout: 15000,
+  timeout: 30000,   // 30s — Render free tier can take time on cold start
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -50,8 +50,11 @@ api.interceptors.response.use(
       return Promise.reject(new Error(message || 'Server error. Please try again.'));
     }
 
-    // No response at all — network error
+    // No response at all — network error or timeout
     if (!error.response) {
+      if (error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK') {
+        return Promise.reject(new Error('Request timed out. Server may be waking up — please try again.'));
+      }
       return Promise.reject(new Error('Cannot connect to server. Check your internet connection.'));
     }
 
