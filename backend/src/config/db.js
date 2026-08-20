@@ -19,6 +19,8 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000,
   keepAlive: true,
   keepAliveInitialDelayMillis: 10000,
+  // PgBouncer / Supabase pooler compatibility
+  allowExitOnIdle: true,
 });
 
 pool.on('connect', () => {

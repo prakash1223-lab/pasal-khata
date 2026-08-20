@@ -52,6 +52,8 @@ async function runMigrations() {
         }
 
         const sql = fs.readFileSync(path.join(MIGRATIONS_DIR, file), 'utf8');
+        // Run each statement separately — PgBouncer transaction pooler
+        // doesn't support multi-statement transactions in migration scripts
         await query(sql);
         await query('INSERT INTO _migrations (filename) VALUES ($1)', [file]);
         console.log(`✅ Ran: ${file}`);
