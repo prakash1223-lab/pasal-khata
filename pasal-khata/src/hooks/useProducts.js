@@ -3,6 +3,7 @@ import { offlineDB }          from '../db/offlineDataLayer';
 import { productService }     from '../services/productService';
 import { useAuth }            from '../context/AuthContext';
 import { useNetwork }         from '../context/NetworkContext';
+import { isNetworkError }     from '../utils/networkCheck';
 
 export function useProducts() {
   const [products, setProducts] = useState([]);
@@ -49,11 +50,21 @@ export function useProducts() {
 
   const createProduct = useCallback(async (data) => {
     if (navigator.onLine) {
-      const res = await productService.create(data);
-      const product = res.data ?? res;
-      await offlineDB.products.saveFromServer([product]).catch(() => {});
-      setProducts(prev => [product, ...prev]);
-      return product;
+      try {
+        const res = await productService.create(data);
+        const product = res.data ?? res;
+        await offlineDB.products.saveFromServer([product]).catch(() => {});
+        setProducts(prev => [product, ...prev]);
+        return product;
+      } catch (err) {
+        if (isNetworkError(err)) {
+          const product = await offlineDB.products.create(data, user.shopId);
+          setProducts(prev => [product, ...prev]);
+          await updatePendingCount();
+          return product;
+        }
+        throw err;
+      }
     } else {
       const product = await offlineDB.products.create(data, user.shopId);
       setProducts(prev => [product, ...prev]);

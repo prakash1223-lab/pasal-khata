@@ -3,6 +3,7 @@ import { offlineDB }          from '../db/offlineDataLayer';
 import { customerService }    from '../services/customerService';
 import { useAuth }            from '../context/AuthContext';
 import { useNetwork }         from '../context/NetworkContext';
+import { isNetworkError }     from '../utils/networkCheck';
 
 export function useCustomers(initialParams = {}) {
   const [customers,  setCustomers]  = useState([]);
@@ -71,15 +72,23 @@ export function useCustomers(initialParams = {}) {
 
   const createCustomer = useCallback(async (data) => {
     if (navigator.onLine) {
-      // Online: create on server directly
-      const res = await customerService.create(data);
-      const customer = res.data ?? res;
-      // Also save to IndexedDB
-      await offlineDB.customers.saveFromServer([customer]).catch(() => {});
-      setCustomers(prev => [customer, ...prev]);
-      return customer;
+      try {
+        const res = await customerService.create(data);
+        const customer = res.data ?? res;
+        await offlineDB.customers.saveFromServer([customer]).catch(() => {});
+        setCustomers(prev => [customer, ...prev]);
+        return customer;
+      } catch (err) {
+        // Server unreachable (Render cold start / no connection) — save offline
+        if (isNetworkError(err)) {
+          const customer = await offlineDB.customers.create(data, user.shopId);
+          setCustomers(prev => [customer, ...prev]);
+          await updatePendingCount();
+          return customer;
+        }
+        throw err;
+      }
     } else {
-      // Offline: create locally and queue
       const customer = await offlineDB.customers.create(data, user.shopId);
       setCustomers(prev => [customer, ...prev]);
       await updatePendingCount();
