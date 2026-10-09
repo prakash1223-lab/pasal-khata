@@ -4,7 +4,7 @@ import { dashboardService }   from '../services/dashboardService';
 import { useAuth }            from '../context/AuthContext';
 import { useNetwork }         from '../context/NetworkContext';
 
-export function useDashboard() {
+export function useDashboard(period = 'month') {
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(null);
@@ -19,7 +19,7 @@ export function useDashboard() {
     try {
       if (navigator.onLine) {
         // Online: get accurate data from server
-        const res = await dashboardService.getSummary();
+        const res = await dashboardService.getSummary(period);
         setData(res.data ?? res);
       } else {
         // Offline: compute from local IndexedDB
@@ -38,7 +38,7 @@ export function useDashboard() {
     } finally {
       setLoading(false);
     }
-  }, [user?.shopId]);
+  }, [user?.shopId, period]);
 
   useEffect(() => { fetchDashboard(); }, [fetchDashboard, syncVersion, isOnline]);
 

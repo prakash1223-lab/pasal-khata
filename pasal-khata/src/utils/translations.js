@@ -370,6 +370,8 @@ export const translations = {
       totalCustomers: 'Total Customers',
       totalProducts: 'Total Products',
       showingThisMonth: "Showing this month's data",
+      showingThisWeek: "Showing this week's data",
+      showingThisYear: "Showing this year's data",
       businessAnalysis: 'Business Analysis',
     },
     settings: {
@@ -865,6 +867,8 @@ export const translations = {
       totalCustomers: 'कुल ग्राहकहरू',
       totalProducts: 'कुल उत्पादनहरू',
       showingThisMonth: 'यो महिनाको डाटा देखाइँदैछ',
+      showingThisWeek: 'यो हप्ताको डाटा देखाइँदैछ',
+      showingThisYear: 'यो वर्षको डाटा देखाइँदैछ',
       businessAnalysis: 'व्यापार विश्लेषण',
     },
     settings: {

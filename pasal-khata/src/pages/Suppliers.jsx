@@ -77,7 +77,7 @@ export default function Suppliers() {
           )}
         </div>
         <button onClick={() => setShowForm(true)}
-          className="fixed bottom-20 right-4 w-14 h-14 bg-amber-500 rounded-full shadow-lg shadow-amber-200 flex items-center justify-center active:scale-95 transition-transform z-40">
+          className="fixed bottom-20 right-4 w-14 h-14 bg-[#1a56db] rounded-full shadow-lg shadow-blue-200 flex items-center justify-center active:scale-95 transition-transform z-40">
           <PlusIcon className="w-7 h-7 text-white" />
         </button>
       </div>
@@ -94,7 +94,7 @@ export default function Suppliers() {
               <SearchBar value={search} onChange={setSearch} placeholder={t.suppliers.searchPlaceholder} />
             </div>
             <button onClick={() => setShowForm(true)}
-              className="flex items-center gap-2 bg-amber-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-amber-600 transition-colors">
+              className="flex items-center gap-2 bg-[#1a56db] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors">
               <PlusIcon className="w-4 h-4" /> {t.suppliers.addSupplier}
             </button>
           </div>

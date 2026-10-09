@@ -1,5 +1,5 @@
 import api from './api';
 
 export const dashboardService = {
-  getSummary: () => api.get('/dashboard'),
+  getSummary: (period = 'month') => api.get('/dashboard', { params: { period } }),
 };
