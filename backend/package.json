@@ -1,6 +1,6 @@
 {
   "name": "pasal-khata-backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Backend API for Pasal Khata - Digital Khata System for Nepal",
   "main": "src/server.js",
   "engines": {
