@@ -150,7 +150,9 @@ export default function Payments() {
         <div className="desktop-toolbar">
           <div>
             <h1 className="text-xl font-bold text-gray-900">{t.payments.title}</h1>
-            <p className="text-sm text-gray-500 mt-0.5">{t.payments.title}</p>
+            <p className="text-sm text-gray-500 mt-0.5">
+              {payments.length} {t.payments.payments} · {FILTERS.find(f => f.key === filter)?.label}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <div className="w-64"><FilterTabs /></div>

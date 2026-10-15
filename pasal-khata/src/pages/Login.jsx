@@ -4,12 +4,12 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../hooks/useTranslation';
 
 export default function Login() {
-  const [tab,      setTab]      = useState('owner');
-  const [email,    setEmail]    = useState('ram@rambhandar.com');
-  const [password, setPassword] = useState('password123');
-  const [phone,    setPhone]    = useState('9841111111');
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState('');
+  const [activeTab, setActiveTab] = useState('owner');
+  const [email,     setEmail]     = useState('');
+  const [password,  setPassword]  = useState('');
+  const [phone,     setPhone]     = useState('');
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState('');
 
   const shopId = import.meta.env.VITE_SHOP_ID ?? '';
 
@@ -17,17 +17,12 @@ export default function Login() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  // Clear errors + reset fields when switching tabs
   const handleTabSwitch = (newTab) => {
-    setTab(newTab);
+    setActiveTab(newTab);
     setError('');
-    // Reset fields to keep UI clean
-    if (newTab === 'owner') {
-      setEmail('');
-      setPassword('');
-    } else {
-      setPhone('');
-    }
+    setEmail('');
+    setPassword('');
+    setPhone('');
   };
 
   const handleOwnerLogin = async (e) => {
@@ -65,6 +60,11 @@ export default function Login() {
     setLoading(false);
   };
 
+  const TABS = [
+    { key: 'owner',    label: t.auth.ownerLoginTab },
+    { key: 'customer', label: t.auth.myKhataTab    },
+  ];
+
   const Spinner = () => (
     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
   );
@@ -83,16 +83,16 @@ export default function Login() {
       <div className="w-full max-w-md bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
         {/* Tabs */}
         <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
-          {[{ key: 'owner', label: t.auth.ownerLoginTab }, { key: 'customer', label: t.auth.myKhataTab }].map(t => (
+          {TABS.map(({ key, label }) => (
             <button
-              key={t.key}
+              key={key}
               type="button"
-              onClick={() => handleTabSwitch(t.key)}
+              onClick={() => handleTabSwitch(key)}
               className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                tab === t.key ? 'bg-white text-[#1a56db] shadow-sm' : 'text-gray-500'
+                activeTab === key ? 'bg-white text-[#1a56db] shadow-sm' : 'text-gray-500'
               }`}
             >
-              {t.label}
+              {label}
             </button>
           ))}
         </div>
@@ -104,7 +104,7 @@ export default function Login() {
           </div>
         )}
 
-        {tab === 'owner' ? (
+        {activeTab === 'owner' ? (
           <form onSubmit={handleOwnerLogin} className="space-y-4" noValidate>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -147,9 +147,6 @@ export default function Login() {
             >
               {loading ? <><Spinner /> {t.auth.loggingIn}</> : t.auth.loginAsOwner}
             </button>
-            <p className="text-center text-xs text-gray-400">
-              Demo: ram@rambhandar.com / password123
-            </p>
           </form>
         ) : (
           <form onSubmit={handleCustomerLogin} className="space-y-4" noValidate>
@@ -171,7 +168,6 @@ export default function Login() {
                   name="phone"
                   value={phone}
                   onChange={e => {
-                    // Only allow digits
                     const val = e.target.value.replace(/\D/g, '');
                     setPhone(val);
                     setError('');
@@ -193,7 +189,6 @@ export default function Login() {
             >
               {loading ? <><Spinner /> {t.auth.loadingKhata}</> : t.auth.getMyKhata}
             </button>
-            <p className="text-center text-xs text-gray-400">Demo: 9841111111</p>
           </form>
         )}
       </div>

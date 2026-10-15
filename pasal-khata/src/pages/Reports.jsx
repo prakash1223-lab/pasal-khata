@@ -8,7 +8,7 @@ import { formatCurrency } from '../utils/currency';
 
 export default function Reports() {
   const [period, setPeriod] = useState('month');
-  const { data, loading }   = useDashboard();
+  const { data, loading }   = useDashboard(period);
   const { t }               = useTranslation();
 
   const PERIODS = [
@@ -16,6 +16,12 @@ export default function Reports() {
     { key: 'month', label: t.reports.period.month },
     { key: 'year',  label: t.reports.period.year  },
   ];
+
+  const PERIOD_LABEL = {
+    week:  t.reports.showingThisWeek,
+    month: t.reports.showingThisMonth,
+    year:  t.reports.showingThisYear,
+  };
 
   const month      = data?.thisMonthSales     ?? { total: 0, count: 0 };
   const baki       = data?.totalBaki          ?? { amount: 0 };
@@ -93,7 +99,7 @@ export default function Reports() {
         <TopBar title={t.reports.title} subtitle={t.reports.businessAnalysis} />
         <div className="px-4 pt-3">
           <FilterTabs />
-          <p className="text-[10px] text-gray-400 text-center mt-1">{t.reports.showingThisMonth}</p>
+          <p className="text-[10px] text-gray-400 text-center mt-1">{PERIOD_LABEL[period]}</p>
         </div>
       </div>
 
@@ -232,7 +238,7 @@ export default function Reports() {
             <div className="desktop-toolbar">
               <div>
                 <h1 className="text-xl font-bold text-gray-900">{t.reports.title}</h1>
-                <p className="text-sm text-gray-500 mt-0.5">{t.reports.businessAnalysis} · {t.reports.showingThisMonth}</p>
+                <p className="text-sm text-gray-500 mt-0.5">{t.reports.businessAnalysis} · {PERIOD_LABEL[period]}</p>
               </div>
               <div className="w-72">
                 <FilterTabs />

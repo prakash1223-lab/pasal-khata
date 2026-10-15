@@ -35,7 +35,7 @@ export default function Dashboard() {
       <div className="md:hidden">
         <TopBar
           title={user?.shopName ?? 'My Shop'}
-          subtitle="पसल खाता"
+          subtitle={user?.name ? `👤 ${user.name}` : 'पसल खाता'}
           rightElement={dateRight}
         />
       </div>
@@ -44,7 +44,9 @@ export default function Dashboard() {
       <div className="hidden md:flex items-center justify-between px-7 pt-6 pb-4">
         <div>
           <h1 className="text-xl font-bold text-gray-900">{user?.shopName ?? 'My Shop'}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">पसल खाता Dashboard</p>
+          <p className="text-sm text-gray-500 mt-0.5">
+            {user?.name ? `👤 ${user.name}` : 'पसल खाता Dashboard'}
+          </p>
         </div>
         <div className="flex flex-col items-end gap-0.5">
           <span className="bg-[#1a56db] text-white text-xs font-medium px-3 py-1 rounded-full">

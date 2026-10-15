@@ -256,6 +256,7 @@ export const translations = {
       noPaymentsDesc: 'Payments will appear here when customers pay.',
       paymentVia: 'Payment via',
       received: 'received',
+      paid: 'paid',
       totalReceived: 'Total Received',
       payments: 'payments',
       receiveNewPayment: 'Receive New Payment',
@@ -370,6 +371,8 @@ export const translations = {
       totalCustomers: 'Total Customers',
       totalProducts: 'Total Products',
       showingThisMonth: "Showing this month's data",
+      showingThisWeek: "Showing this week's data",
+      showingThisYear: "Showing this year's data",
       businessAnalysis: 'Business Analysis',
     },
     settings: {
@@ -751,6 +754,7 @@ export const translations = {
       noPaymentsDesc: 'ग्राहकले भुक्तान गर्दा यहाँ देखिन्छ।',
       paymentVia: 'मार्फत भुक्तानी',
       received: 'प्राप्त भयो',
+      paid: 'तिर्नुभयो',
       totalReceived: 'कुल प्राप्त',
       payments: 'भुक्तानीहरू',
       receiveNewPayment: 'नयाँ भुक्तानी लिनुस्',
@@ -865,6 +869,8 @@ export const translations = {
       totalCustomers: 'कुल ग्राहकहरू',
       totalProducts: 'कुल उत्पादनहरू',
       showingThisMonth: 'यो महिनाको डाटा देखाइँदैछ',
+      showingThisWeek: 'यो हप्ताको डाटा देखाइँदैछ',
+      showingThisYear: 'यो वर्षको डाटा देखाइँदैछ',
       businessAnalysis: 'व्यापार विश्लेषण',
     },
     settings: {

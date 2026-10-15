@@ -8,6 +8,13 @@ async function getDashboard(req, res) {
   try {
     const { shopId } = req.user;
 
+    const period = req.query.period ?? 'month';
+    function periodWhere(col) {
+      if (period === 'week') return `${col} >= NOW() - INTERVAL '7 days'`;
+      if (period === 'year') return `DATE_TRUNC('year', ${col}) = DATE_TRUNC('year', CURRENT_DATE)`;
+      return `DATE_TRUNC('month', ${col}) = DATE_TRUNC('month', CURRENT_DATE)`;
+    }
+
     // Run all queries in parallel for speed
     const [
       todaySalesRes,
@@ -90,14 +97,14 @@ async function getDashboard(req, res) {
         [shopId]
       ),
 
-      // This month's sales
+      // This period's sales
       query(
         `SELECT
            COUNT(*)::int               AS count,
            COALESCE(SUM(total_amount), 0) AS total
          FROM sales
          WHERE shop_id = $1
-           AND DATE_TRUNC('month', sale_date) = DATE_TRUNC('month', CURRENT_DATE)`,
+           AND ${periodWhere('sale_date')}`,
         [shopId]
       ),
 
@@ -129,11 +136,11 @@ async function getDashboard(req, res) {
         [shopId]
       ),
 
-      // This month purchases total cost
+      // This period purchases total cost
       query(
         `SELECT COALESCE(SUM(total_amount),0) AS total, COUNT(*)::int AS count
          FROM purchases WHERE shop_id=$1
-           AND DATE_TRUNC('month', purchase_date) = DATE_TRUNC('month', CURRENT_DATE)`,
+           AND ${periodWhere('purchase_date')}`,
         [shopId]
       ),
 
