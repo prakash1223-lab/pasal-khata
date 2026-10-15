@@ -3,6 +3,38 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from '../hooks/useTranslation';
 
+// Defined outside Login so React never unmounts/remounts on re-render
+const Spinner = () => (
+  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+);
+
+function PhoneInput({ id, value, onChange, onClearError, placeholder }) {
+  return (
+    <div className="flex gap-2">
+      <div className="bg-gray-100 rounded-xl px-3 flex items-center flex-shrink-0">
+        <span className="text-sm font-medium text-gray-600">🇳🇵 +977</span>
+      </div>
+      <input
+        id={id}
+        type="tel"
+        value={value}
+        onChange={e => {
+          onChange(e.target.value.replace(/\D/g, ''));
+          onClearError();
+        }}
+        placeholder={placeholder}
+        maxLength={10}
+        required
+        inputMode="numeric"
+        pattern="[0-9]*"
+        autoComplete="tel"
+        className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a56db]"
+        style={{ fontSize: '16px' }}
+      />
+    </div>
+  );
+}
+
 export default function Login() {
   const [activeTab, setActiveTab] = useState('owner');
   const [phone,     setPhone]     = useState('');
@@ -16,6 +48,8 @@ export default function Login() {
   const { loginAsOwner, loginAsCustomer } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const clearError = () => setError('');
 
   const handleTabSwitch = (newTab) => {
     setActiveTab(newTab);
@@ -66,32 +100,6 @@ export default function Login() {
     { key: 'customer', label: t.auth.myKhataTab    },
   ];
 
-  const Spinner = () => (
-    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-  );
-
-  const PhoneInput = ({ value, onChange, id }) => (
-    <div className="flex gap-2">
-      <div className="bg-gray-100 rounded-xl px-3 flex items-center flex-shrink-0">
-        <span className="text-sm font-medium text-gray-600">🇳🇵 +977</span>
-      </div>
-      <input
-        id={id}
-        type="tel"
-        value={value}
-        onChange={e => { onChange(e.target.value.replace(/\D/g, '')); setError(''); }}
-        placeholder={t.auth.phonePlaceholder}
-        maxLength={10}
-        required
-        inputMode="numeric"
-        pattern="[0-9]*"
-        autoComplete="tel"
-        className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a56db]"
-        style={{ fontSize: '16px' }}
-      />
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center px-6 py-12">
       {/* Logo */}
@@ -133,7 +141,13 @@ export default function Login() {
               <label htmlFor="owner-phone" className="block text-sm font-medium text-gray-700 mb-1.5">
                 {t.auth.phone}
               </label>
-              <PhoneInput id="owner-phone" value={phone} onChange={setPhone} />
+              <PhoneInput
+                id="owner-phone"
+                value={phone}
+                onChange={setPhone}
+                onClearError={clearError}
+                placeholder={t.auth.phonePlaceholder}
+              />
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -144,7 +158,7 @@ export default function Login() {
                 type="password"
                 name="password"
                 value={password}
-                onChange={e => { setPassword(e.target.value); setError(''); }}
+                onChange={e => { setPassword(e.target.value); clearError(); }}
                 placeholder="••••••••"
                 required
                 autoComplete="current-password"
@@ -170,7 +184,13 @@ export default function Login() {
               <label htmlFor="cust-phone" className="block text-sm font-medium text-gray-700 mb-1.5">
                 {t.auth.phone}
               </label>
-              <PhoneInput id="cust-phone" value={custPhone} onChange={setCustPhone} />
+              <PhoneInput
+                id="cust-phone"
+                value={custPhone}
+                onChange={setCustPhone}
+                onClearError={clearError}
+                placeholder={t.auth.phonePlaceholder}
+              />
             </div>
             <button
               type="submit"
