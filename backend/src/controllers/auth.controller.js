@@ -92,16 +92,16 @@ async function login(req, res) {
       return errorResponse(res, 'Validation failed', 400, errors.array());
     }
 
-    const { email, password } = req.body;
+    const { phone, password } = req.body;
 
-    const user = await UserModel.findByEmail(email);
+    const user = await UserModel.findByPhone(phone);
     if (!user) {
-      return unauthorizedResponse(res, 'Invalid email or password.');
+      return unauthorizedResponse(res, 'Invalid phone number or password.');
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
     if (!passwordMatch) {
-      return unauthorizedResponse(res, 'Invalid email or password.');
+      return unauthorizedResponse(res, 'Invalid phone number or password.');
     }
 
     const shop = await ShopModel.findById(user.shop_id);

@@ -5,9 +5,9 @@ import { useTranslation } from '../hooks/useTranslation';
 
 export default function Login() {
   const [activeTab, setActiveTab] = useState('owner');
-  const [email,     setEmail]     = useState('');
-  const [password,  setPassword]  = useState('');
   const [phone,     setPhone]     = useState('');
+  const [password,  setPassword]  = useState('');
+  const [custPhone, setCustPhone] = useState('');
   const [loading,   setLoading]   = useState(false);
   const [error,     setError]     = useState('');
 
@@ -20,17 +20,18 @@ export default function Login() {
   const handleTabSwitch = (newTab) => {
     setActiveTab(newTab);
     setError('');
-    setEmail('');
-    setPassword('');
     setPhone('');
+    setPassword('');
+    setCustPhone('');
   };
 
   const handleOwnerLogin = async (e) => {
     e.preventDefault();
-    if (!email.trim() || !password) { setError(t.errors.required); return; }
+    if (!/^9[6-9]\d{8}$/.test(phone)) { setError(t.errors.invalidNepalPhone); return; }
+    if (!password) { setError(t.errors.required); return; }
     setLoading(true);
     setError('');
-    const result = await loginAsOwner(email.trim(), password);
+    const result = await loginAsOwner(phone, password);
     if (result.success) {
       navigate('/dashboard');
     } else {
@@ -41,7 +42,7 @@ export default function Login() {
 
   const handleCustomerLogin = async (e) => {
     e.preventDefault();
-    if (!/^9[6-9]\d{8}$/.test(phone)) {
+    if (!/^9[6-9]\d{8}$/.test(custPhone)) {
       setError(t.errors.invalidNepalPhone);
       return;
     }
@@ -51,7 +52,7 @@ export default function Login() {
     }
     setLoading(true);
     setError('');
-    const result = await loginAsCustomer(phone, shopId);
+    const result = await loginAsCustomer(custPhone, shopId);
     if (result.success) {
       navigate('/my-khata');
     } else {
@@ -67,6 +68,28 @@ export default function Login() {
 
   const Spinner = () => (
     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+  );
+
+  const PhoneInput = ({ value, onChange, id }) => (
+    <div className="flex gap-2">
+      <div className="bg-gray-100 rounded-xl px-3 flex items-center flex-shrink-0">
+        <span className="text-sm font-medium text-gray-600">🇳🇵 +977</span>
+      </div>
+      <input
+        id={id}
+        type="tel"
+        value={value}
+        onChange={e => { onChange(e.target.value.replace(/\D/g, '')); setError(''); }}
+        placeholder={t.auth.phonePlaceholder}
+        maxLength={10}
+        required
+        inputMode="numeric"
+        pattern="[0-9]*"
+        autoComplete="tel"
+        className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a56db]"
+        style={{ fontSize: '16px' }}
+      />
+    </div>
   );
 
   return (
@@ -107,21 +130,10 @@ export default function Login() {
         {activeTab === 'owner' ? (
           <form onSubmit={handleOwnerLogin} className="space-y-4" noValidate>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                {t.auth.email}
+              <label htmlFor="owner-phone" className="block text-sm font-medium text-gray-700 mb-1.5">
+                {t.auth.phone}
               </label>
-              <input
-                id="email"
-                type="email"
-                name="email"
-                value={email}
-                onChange={e => { setEmail(e.target.value); setError(''); }}
-                placeholder={t.auth.emailPlaceholder}
-                required
-                autoComplete="email"
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a56db]"
-                style={{ fontSize: '16px' }}
-              />
+              <PhoneInput id="owner-phone" value={phone} onChange={setPhone} />
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -155,32 +167,10 @@ export default function Login() {
               <p className="text-xs text-blue-500 mt-1">{t.auth.khataPrivateDesc}</p>
             </div>
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="cust-phone" className="block text-sm font-medium text-gray-700 mb-1.5">
                 {t.auth.phone}
               </label>
-              <div className="flex gap-2">
-                <div className="bg-gray-100 rounded-xl px-3 flex items-center flex-shrink-0">
-                  <span className="text-sm font-medium text-gray-600">🇳🇵 +977</span>
-                </div>
-                <input
-                  id="phone"
-                  type="tel"
-                  name="phone"
-                  value={phone}
-                  onChange={e => {
-                    const val = e.target.value.replace(/\D/g, '');
-                    setPhone(val);
-                    setError('');
-                  }}
-                  placeholder={t.auth.phonePlaceholder}
-                  maxLength={10}
-                  required
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  className="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a56db]"
-                  style={{ fontSize: '16px' }}
-                />
-              </div>
+              <PhoneInput id="cust-phone" value={custPhone} onChange={setCustPhone} />
             </div>
             <button
               type="submit"

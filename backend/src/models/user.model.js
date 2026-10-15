@@ -21,6 +21,14 @@ const UserModel = {
     return res.rows[0] || null;
   },
 
+  async findByPhone(phone) {
+    const res = await query(
+      `SELECT * FROM users WHERE phone = $1 AND is_active = true`,
+      [phone]
+    );
+    return res.rows[0] || null;
+  },
+
   async findById(id) {
     const res = await query(
       `SELECT id, shop_id, name, email, phone, role, is_active, created_at

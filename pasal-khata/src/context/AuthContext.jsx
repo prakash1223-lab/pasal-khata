@@ -79,11 +79,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   // ── loginAsOwner ────────────────────────────────────────────────────────────
-  const loginAsOwner = useCallback(async (email, password) => {
+  const loginAsOwner = useCallback(async (phone, password) => {
     // Offline login: allow re-entry if credentials match saved user
     if (!navigator.onLine) {
       const session = readSession();
-      if (session && session.user.email === email) {
+      if (session && session.user.phone === phone) {
         setUser(session.user);
         setIsAuthenticated(true);
         return { success: true };
@@ -95,7 +95,7 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const res      = await api.post('/auth/login', { email, password });
+      const res      = await api.post('/auth/login', { phone, password });
       const data     = res.data ?? res;
       const userData = {
         id:       data.user.id,

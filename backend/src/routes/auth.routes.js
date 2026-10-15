@@ -29,7 +29,7 @@ router.post(
 router.post(
   '/login',
   [
-    body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+    body('phone').matches(/^9[6-9]\d{8}$/).withMessage('Enter a valid Nepal mobile number'),
     body('password').notEmpty().withMessage('Password is required'),
   ],
   login
