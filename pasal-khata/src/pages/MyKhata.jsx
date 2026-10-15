@@ -98,7 +98,7 @@ export default function MyKhata() {
               <p className="text-xs text-gray-400 mt-1">{t.myKhata.yourPurchases}</p>
             </div>
           ) : (
-            <KhataTimeline transactions={transactions} />
+            <KhataTimeline transactions={transactions} viewAs="customer" />
           )}
         </div>
 

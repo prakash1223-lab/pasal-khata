@@ -91,10 +91,13 @@ function SaleEntry({ sale: raw }) {
   );
 }
 
-function PaymentEntry({ payment: raw }) {
+// viewAs: 'owner' (default) shows "RECEIVED" | 'customer' shows "PAID"
+function PaymentEntry({ payment: raw, viewAs = 'owner' }) {
   const payment  = normalisePayment(raw);
   const dateInfo = formatNepaliDate(payment.date);
   const { t }    = useTranslation();
+
+  const label = viewAs === 'customer' ? t.payments.paid : t.payments.received;
 
   return (
     <div className="flex gap-3">
@@ -108,7 +111,7 @@ function PaymentEntry({ payment: raw }) {
         <div className="bg-white border-l-4 border-[#057a55] rounded-r-xl rounded-bl-xl p-3 shadow-sm">
           <div className="flex items-start justify-between mb-1">
             <div>
-              <p className="text-xs font-bold text-[#057a55] uppercase tracking-wide">{t.payments.received}</p>
+              <p className="text-xs font-bold text-[#057a55] uppercase tracking-wide">{label}</p>
               <p className="text-[11px] text-gray-400">{dateInfo.bs} · {dateInfo.ad}</p>
             </div>
             <p className="text-base font-bold text-[#057a55]">{formatCurrency(payment.amount)}</p>
@@ -122,7 +125,7 @@ function PaymentEntry({ payment: raw }) {
   );
 }
 
-export default function KhataTimeline({ transactions }) {
+export default function KhataTimeline({ transactions, viewAs = 'owner' }) {
   const { t } = useTranslation();
 
   if (!transactions || transactions.length === 0) {
@@ -138,7 +141,7 @@ export default function KhataTimeline({ transactions }) {
       {transactions.map(tx =>
         tx.type === 'sale'
           ? <SaleEntry    key={tx.id} sale={tx}    />
-          : <PaymentEntry key={tx.id} payment={tx} />
+          : <PaymentEntry key={tx.id} payment={tx} viewAs={viewAs} />
       )}
       <div className="text-center py-4">
         <p className="text-xs text-gray-300">— End of timeline —</p>
